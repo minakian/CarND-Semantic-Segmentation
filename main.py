@@ -36,7 +36,7 @@ def load_vgg(sess, vgg_path):
     tf.saved_model.loader.load(sess, [vgg_tag], vgg_path)
 
     graph = sess.graph
-    
+
     image_input = graph.get_tensor_by_name(vgg_input_tensor_name)
     keep_prob = graph.get_tensor_by_name(vgg_keep_prob_tensor_name)
     layer3_out = graph.get_tensor_by_name(vgg_layer3_out_tensor_name)
@@ -44,7 +44,7 @@ def load_vgg(sess, vgg_path):
     layer7_out = graph.get_tensor_by_name(vgg_layer7_out_tensor_name)
 
     return image_input, keep_prob, layer3_out, layer4_out, layer7_out
-    #return None, None, None, None, None
+
 tests.test_load_vgg(load_vgg, tf)
 
 
@@ -58,7 +58,26 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :return: The Tensor for the last layer of output
     """
     # TODO: Implement function
-    return None
+#    print('Layer 3 Shape: {}'.format(vgg_layer3_out.get_shape()))
+#    print('Layer 4 Shape: {}'.format(vgg_layer4_out.get_shape()))
+#    print('Layer 7 Shape: {}'.format(vgg_layer7_out.get_shape()))
+    decode_layer1_7T = tf.layers.conv2d_transpose(vgg_layer7_out, 512, (2, 2), (2, 2))
+    # Why is a 2d convolution done on this layer? (<< Is this necessary?)
+    #decode_layer1_4C = tf.layers.conv2d(vgg_layer4_out, 512, (1, 1), (1, 1))
+    #decode_layer1_output = tf.add(decode_layer1_7T, decode_layer1_4C)
+    # Uncomment line above or line below
+    decode_layer1_output = tf.add(decode_layer1_7T, vgg_layer4_out)
+    decode_layer2_L1T = tf.layers.conv2d_transpose(decode_layer1_output, 256, (2, 2), (2, 2))
+    # Why is a 2d convolution done on this layer? (<< Is this necessary?)
+    #decode_layer2_3C = tf.layers.conv2d(vgg_layer3_out, 256, (1, 1), (1, 1))
+    #decode_layer2_output = tf.add(decode_layer2_L1T, decode_layer2_3C)
+    # Uncomment line above or line below
+    decode_layer2_output = tf.add(decode_layer2_L1T, vgg_layer3_out)
+    decode_layer3_output = tf.layers.conv2d_transpose(decode_layer2_output, 128, (2, 2), (2, 2))
+    decode_layer4_output = tf.layers.conv2d_transpose(decode_layer3_output, 64, (2, 2), (2, 2))
+    decode_layer5_output = tf.layers.conv2d_transpose(decode_layer4_output, num_classes, (2, 2), (2, 2))
+
+    return decode_layer5_output
 tests.test_layers(layers)
 
 
@@ -72,7 +91,11 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     :return: Tuple of (logits, train_op, cross_entropy_loss)
     """
     # TODO: Implement function
-    return None, None, None
+    logits = tf.reshape(nn_last_layer, (-1, num_classes))
+    labels = tf.reshape(correct_label, (-1, num_classes))
+    cross_entropy_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels))
+    train_op = tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy_loss)
+    return logits, train_op, cross_entropy_loss
 tests.test_optimize(optimize)
 
 
@@ -92,6 +115,20 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     :param learning_rate: TF Placeholder for learning rate
     """
     # TODO: Implement function
+    print("Training...")
+    print()
+    for i in range(epochs):
+        batches = get_batches_fn(batch_size)
+        epoch_loss = 0
+        epoch_size = 0
+        for batch_input, batch_label in batches:
+            _, loss = sess.run([train_op, cross_entropy_loss], feed_dict={input_image: batch_input,
+                                                                          correct_label: batch_label,
+                                                                          keep_prob: 0.5,
+                                                                          learning_rate: 1e-4})
+            epoch_loss += loss * len(batch_input)
+            epoch_size += len(batch_input)
+        print("Loss at epoch {}: {}".format(i, epoch_loss/epoch_size))
     pass
 tests.test_train_nn(train_nn)
 
