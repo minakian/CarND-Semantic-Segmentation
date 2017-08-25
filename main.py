@@ -138,10 +138,21 @@ def run():
     image_shape = (160, 576)
     data_dir = './data'
     runs_dir = './runs'
+    model_dir = './model'
+    epochs = 23
+    batch_size = 16
     tests.test_for_kitti_dataset(data_dir)
+
+    if os.path.exists(model_dir):
+        shutil.rmtree(model_dir)
+    os.makedirs(model_dir)
 
     # Download pretrained vgg model
     helper.maybe_download_pretrained_vgg(data_dir)
+
+    # Define TF placeholders
+    correct_label = tf.placeholder(tf.float32, [None, None, None, num_classes])
+    learning_rate = tf.placeholder(tf.float32)
 
     # OPTIONAL: Train and Inference on the cityscapes dataset instead of the Kitti dataset.
     # You'll need a GPU with at least 10 teraFLOPS to train on.
@@ -157,12 +168,26 @@ def run():
         #  https://datascience.stackexchange.com/questions/5224/how-to-prepare-augment-images-for-neural-network
 
         # TODO: Build NN using load_vgg, layers, and optimize function
+        vgg_input, vgg_keep_prob, vgg_layer3_out, vgg_layer4_out, vgg_layer7_out = load_vgg(sess, vgg_path)
+        temp = set(tf.global_variables())
+        out_layer = layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes)
+        softmax = tf.nn.softmax(out_layer, name='softmax')
+        logits, train_op, cross_entropy_loss = optimize(out_layer, correct_label, learning_rate, num_classes)
+
+        tf.train.write_graph(sess.graph.as_graph_def(), model_dir, 'vgg16_fcn.pb')
 
         # TODO: Train NN using the train_nn function
+        sess.run(tf.variables_initializer(set(tf.global_variables()) - temp))
+        train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss,
+                 vgg_input, correct_label, vgg_keep_prob, learning_rate)
 
         # TODO: Save inference data using helper.save_inference_samples
         #  helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
+        helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, vgg_keep_prob, vgg_input)
 
+        saver = tf.train.Saver(max_to_keep=1)
+        savePath = saver.save(sess, os.path.join(model_dir, 'vgg16_fcn.ckpt'))
+        
         # OPTIONAL: Apply the trained model to a video
 
 
