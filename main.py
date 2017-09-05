@@ -142,7 +142,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
         print("Loss at epoch {}: {}".format(i, epoch_loss/epoch_size))
     '''
     lr = 1e-4
-    kp = 0.7
+    kp = 0.5
     for epoch in range(epochs):
         #epoch_loss = 0
         #epoch_size = 0
@@ -165,8 +165,8 @@ def run():
     data_dir = './data'
     runs_dir = './runs'
     #model_dir = './model'
-    epochs = 15
-    batch_size = 16
+    epochs = 20
+    batch_size = 32
     tests.test_for_kitti_dataset(data_dir)
 
     #if os.path.exists(model_dir):
