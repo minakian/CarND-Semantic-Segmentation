@@ -67,12 +67,12 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     conv_1x1_L4 = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, padding='same',
                                     kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
     skip1 = tf.add(output1, conv_1x1_L4)
-    output2 = tf.layers.conv2d_transpose(conv_1x1_L4, num_classes, 4, 2, padding='same',
+    output2 = tf.layers.conv2d_transpose(skip1, num_classes, 4, 2, padding='same',
                                     kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
     conv_1x1_L3 = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, padding='same',
                                     kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
     skip2 = tf.add(output2, conv_1x1_L3)
-    output3 = tf.layers.conv2d_transpose(conv_1x1_L3, num_classes, 16, 8, padding = 'same',
+    output3 = tf.layers.conv2d_transpose(skip2, num_classes, 16, 8, padding = 'same',
                                     kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
     return output3
 
