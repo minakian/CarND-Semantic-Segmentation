@@ -115,7 +115,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     """
     # TODO: Implement function
 
-    lr = 1e-4
+    lr = 1e-5
     kp = 0.5
     for epoch in range(epochs):
         for(image, label) in get_batches_fn(batch_size):
@@ -124,7 +124,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
                                                                           keep_prob: kp,
                                                                           learning_rate: lr})
 
-        print("Epoch {}/{}...".format(epoch, epochs), "Training loss: {:.4f}...".format(loss))
+        print("Epoch {}/{}...".format(epoch+1, epochs), "Training loss: {:.4f}...".format(loss))
     pass
 tests.test_train_nn(train_nn)
 
@@ -134,8 +134,7 @@ def run():
     image_shape = (160, 576)
     data_dir = './data'
     runs_dir = './runs'
-    #model_dir = './model'
-    epochs = 12
+    epochs = 16
     batch_size = 1
     tests.test_for_kitti_dataset(data_dir)
 
