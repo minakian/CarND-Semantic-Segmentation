@@ -165,7 +165,7 @@ def run():
     data_dir = './data'
     runs_dir = './runs'
     #model_dir = './model'
-    epochs = 12
+    epochs = 24
     batch_size = 16
     tests.test_for_kitti_dataset(data_dir)
 
