@@ -59,7 +59,7 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :return: The Tensor for the last layer of output
     """
     # TODO: Implement function
-    '''
+    
     decode_layer1_7T = tf.layers.conv2d_transpose(vgg_layer7_out, 512, (2, 2), (2, 2))
     decode_layer1_4C = tf.layers.conv2d(vgg_layer4_out, 512, (1, 1), (1, 1))
     decode_layer1_output = tf.add(decode_layer1_7T, decode_layer1_4C)
@@ -86,6 +86,7 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     output3 = tf.layers.conv2d_transpose(conv_1x1_L3, num_classes, 16, 8, padding = 'same',
                                    kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
     return output3
+    '''
 tests.test_layers(layers)
 
 
@@ -175,8 +176,8 @@ def run():
     helper.maybe_download_pretrained_vgg(data_dir)
 
     # Define TF placeholders
-    correct_label = tf.placeholder(tf.float32, [None, None, None, num_classes])
-    learning_rate = tf.placeholder(tf.float32)
+#    correct_label = tf.placeholder(tf.float32, [None, None, None, num_classes])
+#    learning_rate = tf.placeholder(tf.float32)
 
     # OPTIONAL: Train and Inference on the cityscapes dataset instead of the Kitti dataset.
     # You'll need a GPU with at least 10 teraFLOPS to train on.
@@ -192,8 +193,11 @@ def run():
         #  https://datascience.stackexchange.com/questions/5224/how-to-prepare-augment-images-for-neural-network
 
         # TODO: Build NN using load_vgg, layers, and optimize function
+        correct_label = tf.placeholder(tf.float32, [None, None, None, num_classes])
+        learning_rate = tf.placeholder(tf.float32)
+
         vgg_input, vgg_keep_prob, vgg_layer3_out, vgg_layer4_out, vgg_layer7_out = load_vgg(sess, vgg_path)
-        #temp = set(tf.global_variables())
+        temp = set(tf.global_variables())
         out_layer = layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes)
         #softmax = tf.nn.softmax(out_layer, name='softmax')
         logits, train_op, cross_entropy_loss = optimize(out_layer, correct_label, learning_rate, num_classes)
@@ -201,7 +205,7 @@ def run():
         #tf.train.write_graph(sess.graph.as_graph_def(), model_dir, 'vgg16_fcn.pb')
 
         # TODO: Train NN using the train_nn function
-        #sess.run(tf.variables_initializer(set(tf.global_variables()) - temp))
+        sess.run(tf.variables_initializer(set(tf.global_variables()) - temp))
         train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss,
                  vgg_input, correct_label, vgg_keep_prob, learning_rate)
 
