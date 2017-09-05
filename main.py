@@ -80,6 +80,7 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     skip2 = tf.add(output2, conv_1x1_L3)
     output3 = tf.layers.conv2d_transpose(conv_1x1_L3, num_classes, 16, 8, padding = 'same')
     return output3
+
 tests.test_layers(layers)
 
 
@@ -188,6 +189,7 @@ def run():
         # TODO: Build NN using load_vgg, layers, and optimize function
         correct_label = tf.placeholder(tf.float32, [None, None, None, num_classes])
         learning_rate = tf.placeholder(tf.float32)
+
         vgg_input, vgg_keep_prob, vgg_layer3_out, vgg_layer4_out, vgg_layer7_out = load_vgg(sess, vgg_path)
         temp = set(tf.global_variables())
         out_layer = layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes)
