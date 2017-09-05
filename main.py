@@ -189,7 +189,7 @@ def run():
         correct_label = tf.placeholder(tf.float32, [None, None, None, num_classes])
         learning_rate = tf.placeholder(tf.float32)
         vgg_input, vgg_keep_prob, vgg_layer3_out, vgg_layer4_out, vgg_layer7_out = load_vgg(sess, vgg_path)
-        #temp = set(tf.global_variables())
+        temp = set(tf.global_variables())
         out_layer = layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes)
         #softmax = tf.nn.softmax(out_layer, name='softmax')
         logits, train_op, cross_entropy_loss = optimize(out_layer, correct_label, learning_rate, num_classes)
@@ -197,7 +197,7 @@ def run():
         #tf.train.write_graph(sess.graph.as_graph_def(), model_dir, 'vgg16_fcn.pb')
 
         # TODO: Train NN using the train_nn function
-        #sess.run(tf.variables_initializer(set(tf.global_variables()) - temp))
+        sess.run(tf.variables_initializer(set(tf.global_variables()) - temp))
         train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss,
                  vgg_input, correct_label, vgg_keep_prob, learning_rate)
 
