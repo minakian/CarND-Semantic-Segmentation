@@ -116,7 +116,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     # TODO: Implement function
 
     lr = 1e-4
-    kp = 0.5
+    kp = 0.7
     for epoch in range(epochs):
         for(image, label) in get_batches_fn(batch_size):
             _, loss = sess.run([train_op, cross_entropy_loss], feed_dict={input_image: image,
@@ -134,7 +134,7 @@ def run():
     image_shape = (160, 576)
     data_dir = './data'
     runs_dir = './runs'
-    epochs = 6
+    epochs = 12
     batch_size = 1
     tests.test_for_kitti_dataset(data_dir)
 
