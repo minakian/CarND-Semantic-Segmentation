@@ -59,7 +59,7 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :return: The Tensor for the last layer of output
     """
     # TODO: Implement function
-    
+
     conv_1x1_L7 = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, padding='same',
                                     kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
     output1 = tf.layers.conv2d_transpose(conv_1x1_L7, num_classes, 4, 2, padding='same',
@@ -136,7 +136,7 @@ def run():
     runs_dir = './runs'
     #model_dir = './model'
     epochs = 12
-    batch_size = 24
+    batch_size = 2
     tests.test_for_kitti_dataset(data_dir)
 
     # Download pretrained vgg model
