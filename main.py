@@ -71,14 +71,20 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     decode_layer5_output = tf.layers.conv2d_transpose(decode_layer4_output, num_classes, (2, 2), (2, 2))
     return decode_layer5_output
     '''
-    conv_1x1_L7 = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, padding='same')
-    output1 = tf.layers.conv2d_transpose(conv_1x1_L7, num_classes, 4, 2, padding='same')
-    conv_1x1_L4 = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, padding='same')
+    conv_1x1_L7 = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, padding='same',
+                                    kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
+    output1 = tf.layers.conv2d_transpose(conv_1x1_L7, num_classes, 4, 2, padding='same',
+                                    kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
+    conv_1x1_L4 = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, padding='same',
+                                    kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
     skip1 = tf.add(output1, conv_1x1_L4)
-    output2 = tf.layers.conv2d_transpose(conv_1x1_L4, num_classes, 4, 2, padding='same')
-    conv_1x1_L3 = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, padding='same')
+    output2 = tf.layers.conv2d_transpose(conv_1x1_L4, num_classes, 4, 2, padding='same',
+                                    kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
+    conv_1x1_L3 = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, padding='same',
+                                    kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
     skip2 = tf.add(output2, conv_1x1_L3)
-    output3 = tf.layers.conv2d_transpose(conv_1x1_L3, num_classes, 16, 8, padding = 'same')
+    output3 = tf.layers.conv2d_transpose(conv_1x1_L3, num_classes, 16, 8, padding = 'same',
+                                    kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
     return output3
 
 tests.test_layers(layers)
@@ -138,16 +144,17 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     lr = 1e-4
     kp = 0.7
     for epochs in range(epochs):
-        epoch_loss = 0
-        epoch_size = 0
+        #epoch_loss = 0
+        #epoch_size = 0
         for(image, label) in get_batches_fn(batch_size):
             _, loss = sess.run([train_op, cross_entropy_loss], feed_dict={input_image: image,
                                                                           correct_label: label,
                                                                           keep_prob: kp,
                                                                           learning_rate: lr})
-            epoch_loss += loss * len(image)
-            epoch_size += len(image)
-        print("Loss at epoch {}: {}".format(epochs, epoch_loss/epoch_size))
+        #    epoch_loss += loss * len(image)
+        #    epoch_size += len(image)
+        #print("Loss at epoch {}: {}".format(epochs, epoch_loss/epoch_size))
+        print("Epoch {}/{}...".format(epoch, epochs), "Training loss: {:.4f}...".format(loss))
     pass
 tests.test_train_nn(train_nn)
 
@@ -158,8 +165,8 @@ def run():
     data_dir = './data'
     runs_dir = './runs'
     #model_dir = './model'
-    epochs = 10
-    batch_size = 10
+    epochs = 15
+    batch_size = 16
     tests.test_for_kitti_dataset(data_dir)
 
     #if os.path.exists(model_dir):
@@ -191,7 +198,7 @@ def run():
         learning_rate = tf.placeholder(tf.float32)
 
         vgg_input, vgg_keep_prob, vgg_layer3_out, vgg_layer4_out, vgg_layer7_out = load_vgg(sess, vgg_path)
-        temp = set(tf.global_variables())
+        #temp = set(tf.global_variables())
         out_layer = layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes)
         #softmax = tf.nn.softmax(out_layer, name='softmax')
         logits, train_op, cross_entropy_loss = optimize(out_layer, correct_label, learning_rate, num_classes)
@@ -199,7 +206,7 @@ def run():
         #tf.train.write_graph(sess.graph.as_graph_def(), model_dir, 'vgg16_fcn.pb')
 
         # TODO: Train NN using the train_nn function
-        sess.run(tf.variables_initializer(set(tf.global_variables()) - temp))
+        sess.run(tf.global_variables_initializer())
         train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss,
                  vgg_input, correct_label, vgg_keep_prob, learning_rate)
 
