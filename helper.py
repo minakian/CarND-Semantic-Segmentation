@@ -78,10 +78,10 @@ def gen_batch_function(data_folder, image_shape):
         background_color = np.array([255, 0, 0])
 
         random.shuffle(image_paths)
-        for batch_i in range(0, len(image_paths), batch_size):
+        for batch_i in range(0, len(image_paths), batch_size/2):
             images = []
             gt_images = []
-            for image_file in image_paths[batch_i:batch_i+batch_size]:
+            for image_file in image_paths[batch_i:batch_i+batch_size/2]:
                 gt_image_file = label_paths[os.path.basename(image_file)]
 
                 image = scipy.misc.imresize(scipy.misc.imread(image_file), image_shape)
@@ -93,6 +93,11 @@ def gen_batch_function(data_folder, image_shape):
 
                 images.append(image)
                 gt_images.append(gt_image)
+
+                image2 = np.fliplr(image)
+                gt_image2 = np.fliplr(gt_image)
+                images.append(image2)
+                gt_images.append(gt_image2)
 
             yield np.array(images), np.array(gt_images)
     return get_batches_fn
